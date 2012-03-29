@@ -37,9 +37,8 @@
 	    ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
 	    base64Regex = /[^a-zA-Z0-9\/\+=]/i;
 
-	var Validator = function(rules) {
-		this.errors = [];
-		this.fields = {};
+	var Validator = function(settings) {
+		this.settings = settings;
 
 		/*
 		for (var i = 0, fieldLength = fields.length; i < fieldLength; i++) {
@@ -62,143 +61,113 @@
 		*/
 	}
 
-	 Validator.prototype.validate = function(event) {
-        this.errors = [];
+	Validator.prototype.validate = function(subject) {
+		this.errors = [];
+		this._errorsHash = {};
+		this._subject = subject;
 
-        for (var key in this.fields) {
-            if (this.fields.hasOwnProperty(key)) {
-                var field = this.fields[key] || {},
-                    element = this.form[field.name];
+		for (var property in this.settings) {
+			if (this.settings.hasOwnProperty(property)) {
+				var rules = this.settings[property] || {};
+				this._validateProperty(property, rules);
+			}
+		}
 
-                if (element && element !== undefined) {
-                    field.type = element.type;
-                    field.value = element.value;
-                    field.checked = element.checked;
-                }
+		return this.errors.length===0;
+	};
 
-                /*
-                 * Run through the rules for each field.
-                 */
+	Validator.prototype._validateProperty = function(property, rules) {
+		//rules could be:
+		// - true
+		// - false
+		// {
+		//	required : true
+		//	requiredError: "..."
+		// }
 
-                this._validateField(field);
-            }
-        }
+		//find the property in the subject
+		var value = this._subject[property];
 
-        if (typeof this.callback === 'function') {
-            this.callback(this.errors, event);
-        }
+		//reset the errorsHash
+		// this._errorsHash[property] = false;
 
-        if (this.errors.length > 0) {
-            if (event && event.preventDefault) {
-                event.preventDefault();
-            } else {
-                // IE6 doesn't pass in an event parameter so return false
-                return false;
-            }
-        }
+		//check for a simple require rule
+		// console.log("rules > ");
+		// console.log(rules);
 
-        return true;
-    };
+		if(rules===true){
+			this._validateValueWithRule(property, value, "required", true, null);
+		}
 
-    Validator.prototype._validateField = function(field) {
-        var rules = field.rules.split('|');
 
-        /*
-         * If the value is null and not required, we don't need to run through validation
-         */
+		for(var rule in rules){
+			if(rules.hasOwnProperty(rule)){
+				//validate each rule
+				this._validateValueWithRule(property, value, rule, rules[rule], rules[rule+"Error"]);
+				//if there is one error break
+				if(this._errorsHash[property]) break;
+			}
+		}
 
-        if (field.rules.indexOf('required') === -1 && (!field.value || field.value === '' || field.value === undefined)) {
-            return;
-        }
+		return !this._errorsHash[property];
 
-        /*
-         * Run through the rules and execute the validation methods as needed
-         */
+	};
 
-        for (var i = 0, ruleLength = rules.length; i < ruleLength; i++) {
-            var method = rules[i],
-                param = null,
-                failed = false;
+	Validator.prototype._validateValueWithRule = function(property, value, rule, param, message){
+		// console.log("_validateValueWithRule");
+		// console.log("value " + value);
 
-            /*
-             * If the rule has a parameter (i.e. matches[param]) split it out
-             */
+		var failed = false,
+			message = "";
 
-            if (parts = ruleRegex.exec(method)) {
-                method = parts[1];
-                param = parts[2];
-            }
+		if (typeof this._validators[rule] === 'function') {
+			failed = !this._validators[rule].apply(this, [value, param]);
+		}
 
-            /*
-             * If the hook is defined, run it to find any validation errors
-             */
+		// console.log("failed " + failed)
 
-            if (typeof this._hooks[method] === 'function') {
-                if (!this._hooks[method].apply(this, [field, param])) {
-                    failed = true;
-                }
-            } else if (method.substring(0, 9) === 'callback_') {
-                // Custom method. Execute the handler if it was registered
-                method = method.substring(9, method.length);
+		if(failed){
+			var source = message || defaults.messages[rule];
+			if (source) {
+				message = source.replace('%s', property);
 
-                if (typeof this.handlers[method] === 'function') {
-                    if (this.handlers[method].apply(this, [field.value]) === false) {
-                        failed = true;
-                    }
-                }
-            }
+				if (param) {
+					message = message.replace('%s', param);
+				}
 
-            /*
-             * If the hook failed, add a message to the errors array
-             */
+			} else {
+				message = 'An error has occurred with the ' + property + '.';
+			}
 
-            if (failed) {
-                // Make sure we have a message for this rule
-                var source = this.messages[method] || defaults.messages[method];
+			this.errors.push(message);
+			this._errorsHash[property] = true;
+		}
 
-                if (source) {
-                    var message = source.replace('%s', field.display);
+		return !failed;
+	}
 
-                    if (param) {
-                        message = message.replace('%s', (this.fields[param]) ? this.fields[param].display : param);
-                    }
+	Validator.prototype._validators = {
 
-                    this.errors.push(message);
-                } else {
-                    this.errors.push('An error has occurred with the ' + field.display + ' field.');
-                }
+		required: function(value, param) {
+			if(!param) return true;
+			// console.log("required validator")
+			if(value===undefined) return false;
+			if(value===null) return false;
+			if(value==='') return false;
+			return true;
+			// return (value !== null && value !== '');
+		},
 
-                // Break out so as to not spam with validation errors (i.e. required and valid_email)
-                break;
-            }
-        }
-    };
-
-	Validator.prototype._hooks = {
-	  required: function(field) {
-	      var value = field.value;
-
-	      if (field.type === 'checkbox') {
-	          return (field.checked === true);
-	      }
-
-	      return (value !== null && value !== '');
+		matches: function(value, match) {
+			return value === this._subject[match];
 	  },
 
-	  matches: function(field, matchName) {
-	      if (el = this.form[matchName]) {
-	          return field.value === el.value;
-	      }
-
-	      return false;
+	  valid_email: function(value) {
+	      return emailRegex.test(value);
 	  },
 
-	  valid_email: function(field) {
-	      return emailRegex.test(field.value);
-	  },
-
-	  valid_emails: function(field) {
-	      var result = field.value.split(",");
+	  valid_emails: function(value) {
+	      var result = value.split(",");
 	      
 	      for (var i = 0; i < result.length; i++) {
 	          if (!emailRegex.test(result[i])) {
@@ -209,84 +178,84 @@
 	      return true;
 	  },
 
-	  min_length: function(field, length) {
+	  min_length: function(value, length) {
 	      if (!numericRegex.test(length)) {
 	          return false;
 	      }
 
-	      return (field.value.length >= parseInt(length, 10));
+	      return (value.length >= parseInt(length, 10));
 	  },
 
-	  max_length: function(field, length) {
+	  max_length: function(value, length) {
 	      if (!numericRegex.test(length)) {
 	          return false;
 	      }
 
-	      return (field.value.length <= parseInt(length, 10));
+	      return (value.length <= parseInt(length, 10));
 	  },
 
-	  exact_length: function(field, length) {
+	  exact_length: function(value, length) {
 	      if (!numericRegex.test(length)) {
 	          return false;
 	      }
 	      
-	      return (field.value.length === parseInt(length, 10));
+	      return (value.length === parseInt(length, 10));
 	  },
 
-	  greater_than: function(field, param) {
-	      if (!decimalRegex.test(field.value)) {
+	  greater_than: function(value, param) {
+	      if (!decimalRegex.test(value)) {
 	          return false;
 	      }
 
-	      return (parseFloat(field.value) > parseFloat(param));
+	      return (parseFloat(value) > parseFloat(param));
 	  },
 
-	  less_than: function(field, param) {
-	      if (!decimalRegex.test(field.value)) {
+	  less_than: function(value, param) {
+	      if (!decimalRegex.test(value)) {
 	          return false;
 	      }
 
-	      return (parseFloat(field.value) < parseFloat(param));
+	      return (parseFloat(value) < parseFloat(param));
 	  },
 
-	  alpha: function(field) {
-	      return (alphaRegex.test(field.value));
+	  alpha: function(value) {
+	      return (alphaRegex.test(value));
 	  },
 
-	  alpha_numeric: function(field) {
-	      return (alphaNumericRegex.test(field.value));
+	  alpha_numeric: function(value) {
+	      return (alphaNumericRegex.test(value));
 	  },
 
-	  alpha_dash: function(field) {
-	      return (alphaDashRegex.test(field.value));
+	  alpha_dash: function(value) {
+	      return (alphaDashRegex.test(value));
 	  },
 
-	  numeric: function(field) {
-	      return (decimalRegex.test(field.value));
+	  numeric: function(value) {
+	      return (decimalRegex.test(value));
 	  },
 
-	  integer: function(field) {
-	      return (integerRegex.test(field.value));
+	  integer: function(value) {
+	      return (integerRegex.test(value));
 	  },
 
-	  decimal: function(field) {
-	      return (decimalRegex.test(field.value));
+	  decimal: function(value) {
+	      return (decimalRegex.test(value));
 	  },
 
-	  is_natural: function(field) {
-	      return (naturalRegex.test(field.value));
+	  is_natural: function(value) {
+	      return (naturalRegex.test(value));
 	  },
 
-	  is_natural_no_zero: function(field) {
-	      return (naturalNoZeroRegex.test(field.value));
+	  is_natural_no_zero: function(value) {
+	      return (naturalNoZeroRegex.test(value));
 	  },
 
-	  valid_ip: function(field) {
-	      return (ipRegex.test(field.value));
+	  valid_ip: function(value) {
+	      return (ipRegex.test(value));
 	  },
 
-	  valid_base64: function(field) {
-	      return (base64Regex.test(field.value));
+	  valid_base64: function(value) {
+	      return (base64Regex.test(value));
 	  }
 	};
 
