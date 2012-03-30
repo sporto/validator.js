@@ -73,10 +73,10 @@ Node usage
 Available rules
 ---------------
 
-*required*
+**required**
 Returns false if not present or blank
 
-*matches*
+**matches**
 Checks that a property matches another property
 
 	var validator = new Validator({
@@ -85,43 +85,43 @@ Checks that a property matches another property
 		}
 	});
 
-*valid_email*
+**valid_email**
 returns false if the property value is not a valid email address.
 
-*valid_emails*
+**valid_emails**
 Checks emails in a comma separated list, the list must not have spaces
 
-*min_length*
+**min_length**
 returns false if the property value is shorter than the parameter.
 
-*max_length*
+**max_length**
 returns false if the property value is longer than the parameter.
 
-*exact_length*
+**exact_length**
 returns false if the property value is less than the parameter after using parseFloat.
 
-*greater_than*
+**greater_than**
 returns false if the property value is less than the parameter after using parseFloat.
 
-*less_than*
+**less_than**
 Returns false if the property contains anything other than alphabetical characters.
 
-*alpha*
+**alpha**
 Returns false if the property contains anything other than alphabetical characters.
 
-*alpha_numeric*
+**alpha_numeric**
 returns false if the property contains anything other than alpha-numeric characters.
 
-*alpha_dash*
+**alpha_dash**
 returns false if the property contains anything other than alphanumeric characters, underscores, or dashes.
 
-*numeric*
+**numeric**
 returns false if the property contains anything other than numeric characters.
 
-*integer*
+**integer**
 returns false if the property contains anything other than an integer.
 
-*valid_ip*
+**valid_ip**
 returns false if the supplied IP is not valid.
 
 
