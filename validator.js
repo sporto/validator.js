@@ -141,6 +141,7 @@
 		},
 
 		valid_emails: function(value) {
+			if(value===undefined) return false;
 
 			var result = value.split(",");
 			
