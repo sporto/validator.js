@@ -11,6 +11,35 @@ Usage
 
 	validator.errors; //array with errors
 
+Example
+-------
+
+	var subject = {
+		name:"James",
+		age:13,
+		id:"22-3"
+	}
+
+	var validator = new Validator({
+		name:{
+			required:true,
+			min_length:3,
+			max_length:20
+		},
+		age:{
+			required:true,
+			numeric:true,
+			greater_than:21
+		},
+		id:{
+			required:true,
+			alpha_dash:true,
+			exact_length:4
+		}
+	});
+
+	var res = validator.validate(subject); // -> true
+
 Shorthand rules
 ---------------
 
@@ -40,6 +69,20 @@ Standard rules
 
 Messages
 --------
+
+Messages are stored in an "errors" array in the validator object:
+
+	var subject = {
+		name:""
+	}
+
+	var validator = new Validator({
+		name:true
+	});
+
+	validator.validate(subject); //-> false
+
+	validator.errors[0] //->"The name field is required.""
 
 You can override the default messages in the following way:
 
@@ -124,6 +167,10 @@ returns false if the property contains anything other than an integer.
 **valid_ip**
 returns false if the supplied IP is not valid.
 
+Caveats
+-------
+
+- This library only handles shallow object
 
 Testing
 -------
