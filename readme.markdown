@@ -1,7 +1,13 @@
 Validator.js
 ============
 
-A javascript validation library for plain javascript objects (Not forms). Heavily modified version of http://rickharrison.github.com/validate.js/
+A javascript validation library for plain javascript objects (Not forms). 
+
+Inspiration (and code borrowing)
+--------------------------------
+
+- http://rickharrison.github.com/validate.js/
+- http://docs.jquery.com/Plugins/Validation
 
 Usage
 -----
@@ -129,43 +135,56 @@ Checks that a property matches another property
 	});
 
 **valid_email**
-returns false if the property value is not a valid email address.
+
+Returns false if the property value is not a valid email address.
 
 **valid_emails**
+
 Checks emails in a comma separated list, the list must not have spaces
 
 **min_length**
-returns false if the property value is shorter than the parameter.
+
+Returns false if the property value is shorter than the parameter.
 
 **max_length**
-returns false if the property value is longer than the parameter.
+
+Returns false if the property value is longer than the parameter.
 
 **exact_length**
-returns false if the property value is less than the parameter after using parseFloat.
+
+Returns false if the property value is less than the parameter after using parseFloat.
 
 **greater_than**
-returns false if the property value is less than the parameter after using parseFloat.
+
+Returns false if the property value is less than the parameter after using parseFloat.
 
 **less_than**
+
 Returns false if the property contains anything other than alphabetical characters.
 
 **alpha**
+
 Returns false if the property contains anything other than alphabetical characters.
 
 **alpha_numeric**
+
 returns false if the property contains anything other than alpha-numeric characters.
 
 **alpha_dash**
-returns false if the property contains anything other than alphanumeric characters, underscores, or dashes.
+
+Returns false if the property contains anything other than alphanumeric characters, underscores, or dashes.
 
 **numeric**
-returns false if the property contains anything other than numeric characters.
+
+Returns false if the property contains anything other than numeric characters.
 
 **integer**
-returns false if the property contains anything other than an integer.
+
+Returns false if the property contains anything other than an integer.
 
 **valid_ip**
-returns false if the supplied IP is not valid.
+
+Returns false if the supplied IP is not valid.
 
 Caveats
 -------
