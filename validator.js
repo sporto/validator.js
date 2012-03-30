@@ -2,25 +2,25 @@
 
 	var defaults = {
 		messages: {
-			required: 'The %s field is required.',
-			matches: 'The %s field does not match the %s field.',
-			valid_email: 'The %s field must contain a valid email address.',
-			valid_emails: 'The %s field must contain all valid email addresses.',
-			min_length: 'The %s field must be at least %s characters in length.',
-			max_length: 'The %s field must not exceed %s characters in length.',
-			exact_length: 'The %s field must be exactly %s characters in length.',
-			greater_than: 'The %s field must contain a number greater than %s.',
-			less_than: 'The %s field must contain a number less than %s.',
-			alpha: 'The %s field must only contain alphabetical characters.',
-			alpha_numeric: 'The %s field must only contain alpha-numeric characters.',
-			alpha_dash: 'The %s field must only contain alpha-numeric characters, underscores, and dashes.',
-			numeric: 'The %s field must contain only numbers.',
-			integer: 'The %s field must contain an integer.',
-			decimal: 'The %s field must contain a decimal number.',
-			is_natural: 'The %s field must contain only positive numbers.',
-			is_natural_no_zero: 'The %s field must contain a number greater than zero.',
-			valid_ip: 'The %s field must contain a valid IP.',
-			valid_base64: 'The %s field must contain a base64 string.'
+			required: 'The %prop field is required.',
+			matches: 'The %prop field does not match the %param field.',
+			valid_email: 'The %prop field must contain a valid email address.',
+			valid_emails: 'The %prop field must contain all valid email addresses.',
+			min_length: 'The %prop field must be at least %param characters in length.',
+			max_length: 'The %prop field must not exceed %param characters in length.',
+			exact_length: 'The %prop field must be exactly %param characters in length.',
+			greater_than: 'The %prop field must contain a number greater than %param.',
+			less_than: 'The %prop field must contain a number less than %param.',
+			alpha: 'The %prop field must only contain alphabetical characters.',
+			alpha_numeric: 'The %prop field must only contain alpha-numeric characters.',
+			alpha_dash: 'The %prop field must only contain alpha-numeric characters, underscores, and dashes.',
+			numeric: 'The %prop field must contain only numbers.',
+			integer: 'The %prop field must contain an integer.',
+			decimal: 'The %prop field must contain a decimal number.',
+			is_natural: 'The %prop field must contain only positive numbers.',
+			is_natural_no_zero: 'The %prop field must contain a number greater than zero.',
+			valid_ip: 'The %prop field must contain a valid IP.',
+			valid_base64: 'The %prop field must contain a base64 string.'
 		}
 	};
 
@@ -87,25 +87,28 @@
 
 		//find the property in the subject
 		var value = this._subject[property];
-
-		//reset the errorsHash
-		// this._errorsHash[property] = false;
+		// console.log(this._subject)
+		// console.log(property)
+		// console.log(value)
 
 		//check for a simple require rule
-		// console.log("rules > ");
-		// console.log(rules);
-
 		if(rules===true){
 			this._validateValueWithRule(property, value, "required", true, null);
-		}
+		}else{
+			//otherwise validate each rule
+			
+			//if not required and value is not present then ignore
+			if(value===undefined && rules["required"]===false){
+				return;
+			}
 
-
-		for(var rule in rules){
-			if(rules.hasOwnProperty(rule)){
-				//validate each rule
-				this._validateValueWithRule(property, value, rule, rules[rule], rules[rule+"Error"]);
-				//if there is one error break
-				if(this._errorsHash[property]) break;
+			for(var rule in rules){
+				if(rules.hasOwnProperty(rule)){
+					//validate each rule
+					this._validateValueWithRule(property, value, rule, rules[rule], rules[rule+"_error"]);
+					//if there is one error break
+					if(this._errorsHash[property]) break;
+				}
 			}
 		}
 
@@ -117,11 +120,13 @@
 		// console.log("_validateValueWithRule");
 		// console.log("value " + value);
 
-		var failed = false,
-			message = "";
+		var failed = false;
 
 		if (typeof this._validators[rule] === 'function') {
-			failed = !this._validators[rule].apply(this, [value, param]);
+			//do not apply the validator if false
+			if(param!==false){
+				failed = !this._validators[rule].apply(this, [value, param]);
+			}
 		}
 
 		// console.log("failed " + failed)
@@ -129,12 +134,8 @@
 		if(failed){
 			var source = message || defaults.messages[rule];
 			if (source) {
-				message = source.replace('%s', property);
-
-				if (param) {
-					message = message.replace('%s', param);
-				}
-
+				message = source.replace('%prop', property);
+				message = message.replace('%param', param);
 			} else {
 				message = 'An error has occurred with the ' + property + '.';
 			}
@@ -160,23 +161,25 @@
 
 		matches: function(value, match) {
 			return value === this._subject[match];
-	  },
+		},
 
-	  valid_email: function(value) {
-	      return emailRegex.test(value);
-	  },
+		valid_email: function(value) {
+			return emailRegex.test(value);
+		},
 
-	  valid_emails: function(value) {
-	      var result = value.split(",");
-	      
-	      for (var i = 0; i < result.length; i++) {
-	          if (!emailRegex.test(result[i])) {
-	              return false;
-	          }
-	      }
-	      
-	      return true;
-	  },
+		valid_emails: function(value) {
+
+			var result = value.split(",");
+			
+			for (var i = 0; i < result.length; i++) {
+				// console.log(result[i])
+				if (!emailRegex.test(result[i])) {
+					return false;
+				}
+			}
+
+			return true;
+		},
 
 	  min_length: function(value, length) {
 	      if (!numericRegex.test(length)) {
@@ -194,13 +197,12 @@
 	      return (value.length <= parseInt(length, 10));
 	  },
 
-	  exact_length: function(value, length) {
-	      if (!numericRegex.test(length)) {
-	          return false;
-	      }
-	      
-	      return (value.length === parseInt(length, 10));
-	  },
+		exact_length: function(value, length) {
+			if (!numericRegex.test(length)) {
+				return false;
+			}
+			return (value.length === parseInt(length, 10));
+		},
 
 	  greater_than: function(value, param) {
 	      if (!decimalRegex.test(value)) {
@@ -223,7 +225,7 @@
 	  },
 
 	  alpha_numeric: function(value) {
-	      return (alphaNumericRegex.test(value));
+			return (alphaNumericRegex.test(value));
 	  },
 
 	  alpha_dash: function(value) {
@@ -238,25 +240,25 @@
 	      return (integerRegex.test(value));
 	  },
 
-	  decimal: function(value) {
-	      return (decimalRegex.test(value));
-	  },
+	  // decimal: function(value) {
+	  //     return (decimalRegex.test(value));
+	  // },
 
-	  is_natural: function(value) {
-	      return (naturalRegex.test(value));
-	  },
+	  // is_natural: function(value) {
+	  //     return (naturalRegex.test(value));
+	  // },
 
-	  is_natural_no_zero: function(value) {
-	      return (naturalNoZeroRegex.test(value));
-	  },
+	  // is_natural_no_zero: function(value) {
+	  //     return (naturalNoZeroRegex.test(value));
+	  // },
 
 	  valid_ip: function(value) {
 	      return (ipRegex.test(value));
-	  },
-
-	  valid_base64: function(value) {
-	      return (base64Regex.test(value));
 	  }
+
+	  // valid_base64: function(value) {
+	  //     return (base64Regex.test(value));
+	  // }
 	};
 
 	if (typeof module !== 'undefined' && module.exports) {

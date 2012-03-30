@@ -44,7 +44,10 @@ describe('validator', function(){
 
 	});
 
-	describe("simple validation", function(){
+	describe("shorthand rules", function(){
+		//rules that are defined in the shorthand mode
+		//i.e. property:true/false
+		//this only applies for the require rule
 		var validator;
 
 		beforeEach(function(){
@@ -57,8 +60,6 @@ describe('validator', function(){
 		
 		it("validates true when properties are present",function(){
 			var subject = {name:"James",age:15};
-			// validator.validate(subject).should.be.ok;
-			//validator.errors.should.be
 			var res = validator.validate(subject);
 			assert.isTrue(res);
 			assert.length(validator.errors, 0);
@@ -87,7 +88,8 @@ describe('validator', function(){
 
 	});
 
-	describe("normal rules", function(){
+	describe("standard rules", function(){
+		//rules that are defined in the standard structure i.e. rule:value
 		var validator;
 
 		beforeEach(function(){
@@ -114,280 +116,101 @@ describe('validator', function(){
 	});
 
 	describe("multiple rules", function(){
-
-	});
-
-	describe("default messages", function(){
-
-	})
-
-	describe("custom messages", function(){
-
-	})
-
-	describe("not required but still present", function(){
-
-	});
-
-	describe("validators", function(){
-		var validator;
-		var badSubject = {
-			name:"",
-			age:-2,
-			legs:3,
-			sex:'?',
-			email:"dj@ldld",
-			altEmails:"james@gmail.com, djdk@dkdk"
-		}
-		var goodSubject = {
-			name:"James",
-			age:12,
-			legs:2,
-			sex:'m',
-			email:'james@james.com',
-			altEmails:'james@gmail.com, james@hotmail.com'
-		}
+		var validator, subject;
 
 		beforeEach(function(){
 			validator = new Validator({
-					name:{
-						required:true
-					},
-					age:{
-						required:true
-					},
-					sex:{
-						required:false
-					}
-				});
-		});
-
-		describe("required", function(){
-
-			it("validates true", function(){
-
+				name:{
+					required:true,
+					min_length:3,
+					max_length:10,
+					alpha:true
+				},
+				id:{
+					required:false,
+					alpha_dash:true,
+					exact_length:10
+				},
+				email:{
+					required:true,
+					email:true
+				}
 			});
 
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("matches", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
+			subject = {
+				name:"James",
+				id:"123-456-78",
+				email:"james@company.com"
+			}
 
 		});
 
-		describe("valid_email", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("passes", function(){
+			var res = validator.validate(subject);
+			assert.isTrue(res);
 		});
 
-		describe("valid_emails", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("validates required", function(){
+			subject.name = "";
+			var res = validator.validate(subject);
+			assert.isFalse(res);
 		});
 
-		describe("min_length", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("validate name min_length", function(){
+			subject.name = "Po";
+			var res = validator.validate(subject);
+			assert.isFalse(res);
 		});
 
-		describe("max_length", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("validate name max_length", function(){
+			subject.name = "Lucinda Amanda";
+			var res = validator.validate(subject);
+			assert.isFalse(res);
 		});
 
-		describe("exact_length", function(){
+	});
 
-			it("validates true", function(){
+	describe("not required but still present", function(){
+		var validator, subject;
 
+		beforeEach(function(){
+			validator = new Validator({
+				name:{
+					required:true,
+					alpha:true
+				},
+				id:{
+					required:false,
+					exact_length:10
+				}
 			});
-
-			it("validates to false", function(){
-
-			});
-
+			subject = {
+				name:"James",
+				id:"123-456-78"
+			}
 		});
 
-		describe("greater_than", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("passes", function(){
+			var res = validator.validate(subject);
+			assert.isTrue(res);
 		});
 
-		describe("less_than", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("fails", function(){			
+			subject.name = "";
+			var res = validator.validate(subject);
+			assert.isFalse(res);
 		});
 
-		describe("alpha", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("doesn't care if unrequired field is missing", function(){
+			delete(subject.id);
+			var res = validator.validate(subject);
+			assert.isTrue(res);
 		});
 
-		describe("alpha_numeric", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("alpha_dash", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("numeric", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("integer", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("decimal", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("is_natural", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("is_natural_no_zero", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("valid_ip", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
-		});
-
-		describe("valid_base64", function(){
-
-			it("validates true", function(){
-
-			});
-
-			it("validates to false", function(){
-
-			});
-
+		it("validates the field if no required but present", function(){
+			subject.id = "12";
+			var res = validator.validate(subject);
+			assert.isFalse(res);
 		});
 
 	});
