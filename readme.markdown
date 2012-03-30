@@ -202,3 +202,8 @@ Install mocha and chai
 Run the tests
 
 	$ mocha
+
+License
+-------
+
+MIT

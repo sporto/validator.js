@@ -25,40 +25,20 @@
 	};
 
 	var ruleRegex = /^(.+)\[(.+)\]$/,
-	    numericRegex = /^[0-9]+$/,
-	    integerRegex = /^\-?[0-9]+$/,
-	    decimalRegex = /^\-?[0-9]*\.?[0-9]+$/,
-	    emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i,
-	    alphaRegex = /^[a-z]+$/i,
-	    alphaNumericRegex = /^[a-z0-9]+$/i,
-	    alphaDashRegex = /^[a-z0-9_-]+$/i,
-	    naturalRegex = /^[0-9]+$/i,
-	    naturalNoZeroRegex = /^[1-9][0-9]*$/i,
-	    ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
-	    base64Regex = /[^a-zA-Z0-9\/\+=]/i;
+		numericRegex = /^[0-9]+$/,
+		integerRegex = /^\-?[0-9]+$/,
+		decimalRegex = /^\-?[0-9]*\.?[0-9]+$/,
+		emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i,
+		alphaRegex = /^[a-z]+$/i,
+		alphaNumericRegex = /^[a-z0-9]+$/i,
+		alphaDashRegex = /^[a-z0-9_-]+$/i,
+		naturalRegex = /^[0-9]+$/i,
+		naturalNoZeroRegex = /^[1-9][0-9]*$/i,
+		ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
+		base64Regex = /[^a-zA-Z0-9\/\+=]/i;
 
 	var Validator = function(settings) {
 		this.settings = settings;
-
-		/*
-		for (var i = 0, fieldLength = fields.length; i < fieldLength; i++) {
-    	var field = fields[i];
-
-            // If passed in incorrectly, we need to skip the field.
-            if (!field.name || !field.rules) {
-                continue;
-            }
-
-            this.fields[field.name] = {
-                name: field.name,
-                display: field.display || field.name,
-                rules: field.rules,
-                type: null,
-                value: null,
-                checked: null
-            };
-        }
-		*/
 	}
 
 	Validator.prototype.validate = function(subject) {
@@ -87,9 +67,6 @@
 
 		//find the property in the subject
 		var value = this._subject[property];
-		// console.log(this._subject)
-		// console.log(property)
-		// console.log(value)
 
 		//check for a simple require rule
 		if(rules===true){
@@ -117,8 +94,6 @@
 	};
 
 	Validator.prototype._validateValueWithRule = function(property, value, rule, param, message){
-		// console.log("_validateValueWithRule");
-		// console.log("value " + value);
 
 		var failed = false;
 
@@ -128,8 +103,6 @@
 				failed = !this._validators[rule].apply(this, [value, param]);
 			}
 		}
-
-		// console.log("failed " + failed)
 
 		if(failed){
 			var source = message || defaults.messages[rule];
@@ -181,21 +154,21 @@
 			return true;
 		},
 
-	  min_length: function(value, length) {
-	      if (!numericRegex.test(length)) {
-	          return false;
-	      }
+		min_length: function(value, length) {
+			if (!numericRegex.test(length)) {
+				return false;
+			}
 
-	      return (value.length >= parseInt(length, 10));
-	  },
+			return (value.length >= parseInt(length, 10));
+		},
 
-	  max_length: function(value, length) {
-	      if (!numericRegex.test(length)) {
-	          return false;
-	      }
+		max_length: function(value, length) {
+			if (!numericRegex.test(length)) {
+				return false;
+			}
 
-	      return (value.length <= parseInt(length, 10));
-	  },
+			return (value.length <= parseInt(length, 10));
+		},
 
 		exact_length: function(value, length) {
 			if (!numericRegex.test(length)) {
@@ -204,74 +177,57 @@
 			return (value.length === parseInt(length, 10));
 		},
 
-	  greater_than: function(value, param) {
-	      if (!decimalRegex.test(value)) {
-	          return false;
-	      }
+		greater_than: function(value, param) {
+			if (!decimalRegex.test(value)) {
+				return false;
+			}
 
-	      return (parseFloat(value) > parseFloat(param));
-	  },
+			return (parseFloat(value) > parseFloat(param));
+		},
 
-	  less_than: function(value, param) {
-	      if (!decimalRegex.test(value)) {
-	          return false;
-	      }
+		less_than: function(value, param) {
+			if (!decimalRegex.test(value)) {
+				return false;
+			}
 
-	      return (parseFloat(value) < parseFloat(param));
-	  },
+			return (parseFloat(value) < parseFloat(param));
+		},
 
-	  alpha: function(value) {
-	      return (alphaRegex.test(value));
-	  },
+		alpha: function(value) {
+			return (alphaRegex.test(value));
+		},
 
-	  alpha_numeric: function(value) {
+		alpha_numeric: function(value) {
 			return (alphaNumericRegex.test(value));
-	  },
+		},
 
-	  alpha_dash: function(value) {
-	      return (alphaDashRegex.test(value));
-	  },
+		alpha_dash: function(value) {
+			return (alphaDashRegex.test(value));
+		},
 
-	  numeric: function(value) {
-	      return (decimalRegex.test(value));
-	  },
+		numeric: function(value) {
+			return (decimalRegex.test(value));
+		},
 
-	  integer: function(value) {
-	      return (integerRegex.test(value));
-	  },
+		integer: function(value) {
+			return (integerRegex.test(value));
+		},
 
-	  // decimal: function(value) {
-	  //     return (decimalRegex.test(value));
-	  // },
+		valid_ip: function(value) {
+			return (ipRegex.test(value));
+		}
 
-	  // is_natural: function(value) {
-	  //     return (naturalRegex.test(value));
-	  // },
-
-	  // is_natural_no_zero: function(value) {
-	  //     return (naturalNoZeroRegex.test(value));
-	  // },
-
-	  valid_ip: function(value) {
-	      return (ipRegex.test(value));
-	  }
-
-	  // valid_base64: function(value) {
-	  //     return (base64Regex.test(value));
-	  // }
 	};
 
 	if (typeof module !== 'undefined' && module.exports) {
-		//var _ = require('underscore')._;
-		//_.mixin(require('underscore.string'));
-		// String.prototype.humanize = function() {
-		//   return _(this).underscored().replace('_', ' ');
-		// }
 		exports.Validator = Validator; 
+	}else if(typeof define !== 'undefined') {
+		define(function(){
+			return Validator;
+		});
 	} else {
-		// var _ = this._;
-		// this.newErrors = newErrors;
-		// this.validate = validate;
+		window.Validator = Validator;
 	}
 
 }());
+
