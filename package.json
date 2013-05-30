@@ -1,0 +1,30 @@
+{
+  "name": "validator.js",
+  "version": "1.0.0",
+  "description": "JS Validation",
+  "main": "validator.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+  
+  },
+  "devDependencies": {
+  	"mocha": "~1.8.1",
+  	"chai": "~0.5.2"
+  },
+  "scripts": {
+    "test": "mocha $(find test -name '*_spec.js')"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sporto/validator.js.git"
+  },
+  "keywords": [
+    "validation"
+  ],
+  "author": "Sebastian Porto",
+  "license": "MIT",
+  "readmeFilename": "readme.markdown",
+  "gitHead": "4a70ec2ca41787c1dfbe086151ae6274c9efa3d0"
+}
