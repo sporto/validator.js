@@ -1,6 +1,8 @@
 Validator.js
 ============
 
+[![Build Status](https://travis-ci.org/sporto/validator.js.png)](https://travis-ci.org/sporto/validator.js)
+
 A javascript validation library for plain javascript objects (Not forms). 
 
 Inspiration (and code borrowing)
